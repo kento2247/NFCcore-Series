@@ -60,3 +60,49 @@ bool nfc_write_name(String FirstName, String LastName) {
     }
   }
 }
+bool nfc_version_check() {
+  byte sector0_data[18];
+  if (!nfc_read(sector0_data, 1)) return false;
+  if (sector0_data[0] == NFCCore_version) {
+    Serial.println(F("This  is the latest version"));
+    Serial.println();
+    return true;
+  }
+  else {
+    bool Update;
+    Serial.println(F("This is not the latest version"));
+    Serial.println(F("Enter 1 if you want to update, enter 0 to end"));
+    Serial.print(F("command >> "));
+    while (Serial.available()) Serial.read();  //シリアルポートに溜まっているいらない情報を捨てる
+    while (!Serial.available() > 0);  //pcからのシリアル信号（コマンド入力）を待つ
+    while (Serial.available()) Update = (byte)(Serial.readStringUntil("¥n").toInt());  //読んだ信号をint型の数字に変換
+    Serial.println(Update);
+    Serial.println();
+
+    if (Update && nfc_version_update(sector0_data)) return true;
+    if (!Update) return true;
+    else return false;
+  }
+  if(Update == 1){
+    Seril.println(F("Please,touch your card again."));
+    while (!nfc_check());
+  }
+}
+
+
+
+
+
+bool nfc_version_update(byte WriteData[]) {
+  Serial.println(F("NFC begin card version update"));
+  WriteData[0] = NFCCore_version;
+  if (!nfc_write(WriteData, 1)) {
+    Serial.println(F("nfc_version_update failed"));
+    return false;
+  }
+  else {
+    Serial.println(F("nfc_version_update is in success"));
+    return true;
+  }
+  Serial.println();
+}
