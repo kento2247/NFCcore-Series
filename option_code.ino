@@ -60,9 +60,3 @@ bool nfc_write_name(String FirstName, String LastName) {
     }
   }
 }
-
-
-
-void nfc_setKeyB(byte sector) {
-  Serial.print(F("NFC set keyB data for sector: "));
-  Serial.println(sector);
