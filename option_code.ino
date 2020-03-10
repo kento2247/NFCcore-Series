@@ -77,16 +77,16 @@ bool nfc_version_check() {
     while (!Serial.available() > 0);  //pcからのシリアル信号（コマンド入力）を待つ
     while (Serial.available()) Update = (byte)(Serial.readStringUntil("¥n").toInt());  //読んだ信号をint型の数字に変換
     Serial.println(Update);
-    Serial.println();
+    Serial.println()
+      Seril.println(F("Please,touch your card again."))
+      while (!nfc_check());
 
+  }
     if (Update && nfc_version_update(sector0_data)) return true;
     if (!Update) return true;
     else return false;
   }
-  if(Update == 1){
-    Seril.println(F("Please,touch your card again."));
-    while (!nfc_check());
-  }
+  
 }
 
 
