@@ -1,5 +1,12 @@
-//  String nfc_read_name()
-//    bool nfc_write_name(String FirstName, String LastName)
+/*関数一覧
+  String nfc_read_name()
+  bool nfc_write_name(String FirstName, String LastName)
+*/
+
+
+
+
+
 String nfc_read_name() {
   Serial.println(F("NFC begin read user_name data"));
   Serial.println(F(" use block: 2"));
