@@ -54,7 +54,7 @@ bool nfc_write_name(String FirstName, String LastName) {
       return false;
     }
     else {
-      Serial.println(F("nfc_writ_ename() is in success"));
+      Serial.println(F("nfc_write_name() is in success"));
       Serial.println();
       return true;
     }
