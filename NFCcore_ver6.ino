@@ -117,6 +117,7 @@ bool nfc_read(byte nfc_readData[], byte block) {
     Serial.print(nfc_readData[i]);
     Serial.print(" ");
   }
+  Serial.print(" ");
   Serial.println(F("nfc_read() is in success"));
   Serial.println();
   return true;
