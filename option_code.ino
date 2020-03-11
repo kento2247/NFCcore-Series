@@ -46,7 +46,12 @@ bool nfc_write_name(String FirstName, String LastName) {
   }
   else {
     Serial.println(F(">>convert to ASCIIcode"));
-    byte nfc_writeData[16];
+    byte nfc_writeData[16]= {
+      0,0,0,0,
+      0,0,0,0,
+      0,0,0,0,
+      0,0,0,0
+      };
     Name.getBytes(nfc_writeData, 16);  //NAME変数をASCIIコード配列に変換
     if (!nfc_write(nfc_writeData, 2)) {
       Serial.println(F("nfc_write_name() failed"));
