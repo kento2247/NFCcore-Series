@@ -1,4 +1,4 @@
-//2020/03/10更新
+//2020/03/12更新
 
 /*関数一覧
    bool nfc_setup_uno()
@@ -45,7 +45,7 @@
 #include <SPI.h>
 
 
-
+#define NFCCore_version 6
 #define RST_PIN 9            // NFC RSTピン(SPI通信時には設定必要)
 #define SS_PIN 10             // NFC SDAピン(SPI通信時には設定必要)
 
@@ -70,12 +70,12 @@ MFRC522::PICC_Type piccType;
 
 bool nfc_setup_uno() {
   Serial.begin(9600);
-  Serial.println(F("begin Serial com"));
+  Serial.println(F(">begin Serial com"));
   while (!Serial);
-  Serial.println(F("begin SPI com"));
+  Serial.println(F(">begin SPI com"));
   SPI.begin();
   delay(10);
-  Serial.println(F("initialize nfc_PCD"));
+  Serial.println(F(">initialize nfc_PCD"));
   mfrc522.PCD_Init();  //PCD (Proximity Coupling Device)の初期化
   if (nfc_connected()) return true;
   else return false;
@@ -90,7 +90,7 @@ bool nfc_check() {  // Mifareカードの確認（新しいカードが無けれ
   Serial.println();
   Serial.println();
   Serial.println();
-  Serial.println(F("NFCtag touched"));
+  Serial.println(F(">NFCtag touched"));
   Serial.println();
   return true;
 }
@@ -108,17 +108,16 @@ bool nfc_read(byte nfc_readData[], byte block) {
   byte size = 18; //18固定
   status = (MFRC522::StatusCode)mfrc522.MIFARE_Read(block, nfc_readData,  &size);
   if (status != MFRC522::STATUS_OK) {
-    Serial.println(F("nfc_read() failed"));
+    Serial.println(F(">nfc_read() failed"));
     Serial.println();
     return false;
   }
-  Serial.print(F("result: "));
+  Serial.print(F(">nfc_read() result: "));
   for (byte i = 0; i < 16; i++) {
     Serial.print(nfc_readData[i]);
     Serial.print(" ");
   }
-  Serial.print(" ");
-  Serial.println(F("nfc_read() is in success"));
+  Serial.println();
   Serial.println();
   return true;
 }
@@ -148,20 +147,21 @@ bool nfc_write(byte WriteData[], byte block) { //書き込む配列、書き込�
   Serial.println();
   status = (MFRC522::StatusCode)mfrc522.MIFARE_Write(block, WriteData, size);
   if (status != MFRC522::STATUS_OK) {
-    Serial.println(F("nfc_write() failed"));
+    Serial.println(F(">nfc_write() failed"));
     Serial.println();
     return false;
   }
-  Serial.println(F("nfc_write() is in success"));
+  Serial.println(F(">nfc_write() is in success"));
   Serial.println();
   return true;
 }
 
 
+
 void nfc_setKeyB(byte sector) {
-  Serial.print(F("NFC set keyB data for sector: "));
+  Serial.print(F(" set keyB data for sector: "));
   Serial.println(sector);
-  Serial.print(F(" use KeyB: "));
+  Serial.print(F(" KeyB: "));
   for (byte i = 0; i < 6; i++) {
     KeyB.keyByte[i] = keyB_sector[sector][i];
     Serial.print(KeyB.keyByte[i]);
@@ -174,14 +174,12 @@ void nfc_setKeyB(byte sector) {
 bool nfc_auth_a(byte block) {
   byte sector = int(block / 4);
   byte trailerBlock   = sector * 4 + 3;  //そのセクターの認証キーが格納されているブロック番号
-  Serial.println(F("start authenticate typeA"));
-  Serial.print(F(" sector: "));
-  Serial.println(sector);
-  Serial.print(F(" piccType: "));
+  Serial.print(F("     piccType: "));
   piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
   Serial.println(piccType);
+  Serial.println(F(" start authenticate typeA"));
   if (piccType != MFRC522::PICC_TYPE_MIFARE_UL) {
-    Serial.print(F("use KeyA: "));
+    Serial.print(F(" use KeyA: "));
     for (byte i = 0; i < 6; i++) {
       Serial.print(KeyA.keyByte[i]);
       Serial.print(" ");
@@ -189,7 +187,7 @@ bool nfc_auth_a(byte block) {
     Serial.println();
     status = (MFRC522::StatusCode)mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &KeyA, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
-      Serial.println(F("nfc_auth_a() failed"));
+      Serial.println(F(">nfc_auth_a() failed"));
       Serial.println();
       return false;
     }
@@ -203,17 +201,15 @@ bool nfc_auth_a(byte block) {
 bool nfc_auth_b(byte block) {
   byte sector = int(block / 4);
   byte trailerBlock   = sector * 4 + 3;  //そのセクターの認証キーが格納されているブロック番号
-  Serial.println(F("start authenticate typeB"));
-  Serial.print(F(" sector: "));
-  Serial.println(sector);
-  Serial.print(F(" piccType: "));
+  Serial.print(F("     piccType: "));
   piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
   Serial.println(piccType);
+  Serial.println(F(" start authenticate typeB"));
   if (piccType != MFRC522::PICC_TYPE_MIFARE_UL) {
     nfc_setKeyB(sector);
     status = (MFRC522::StatusCode)mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &KeyB, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
-      Serial.println(F("nfc_auth_b() failed"));
+      Serial.println(F(">nfc_auth_b() failed"));
       Serial.println();
       return false;
     }
@@ -231,7 +227,7 @@ String nfc_uid() {
     strBuf[i] =  String(mfrc522.uid.uidByte[i], HEX);
     strUID += strBuf[i] += " ";
   }
-  Serial.print(F(" UID = "));
+  Serial.print(F(">UID = "));
   Serial.println(strUID);
   return strUID;
 }
@@ -260,13 +256,13 @@ bool nfc_uid_change(byte newUid[]) {
 
   Serial.println(F("NFC begin change UID"));
   if (! mfrc522.MIFARE_SetUid(newUid, (byte)4, true) ) {
-    Serial.println(F("nfc_uid_change() failed"));
+    Serial.println(F(">nfc_uid_change() failed"));
     Serial.println();
 
     return false;
   }
-  Serial.println(F("nfc_uid_change() is in success"));
-  Serial.print(F("new UID is "));
+  Serial.println(F(">nfc_uid_change() is in success"));
+  Serial.print(F(">new UID is "));
   mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
   Serial.println();
   return true;
@@ -295,10 +291,10 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
 
 void nfc_key_show() {
   Serial.println(F("NFC begin key show"));
-  Serial.print(F("authenticate KeyA :"));
+  Serial.print(F(">authenticate KeyA :"));
   dump_byte_array(KeyA.keyByte, MFRC522::MF_KEY_SIZE);
   Serial.println();
-  Serial.print(F("authenticate KeyB :"));
+  Serial.print(F(">authenticate KeyB :"));
   dump_byte_array(KeyB.keyByte, MFRC522::MF_KEY_SIZE);
   Serial.println();
 }
@@ -323,12 +319,12 @@ bool nfc_connected() {
   //mfrc522.PCD_GetAntennaGain()は接続時に64、そうでない時は0を返す
   bool state = mfrc522.PCD_GetAntennaGain() / 64;
   if (state) {
-    Serial.println(F("successed"));
+    Serial.println(F(">successed"));
     Serial.println();
     return true;
   }
   else {
-    Serial.println(F("failed"));
+    Serial.println(F(">failed"));
     return false;
   }
 }
@@ -340,4 +336,5 @@ byte nfc_cardtype() {
   Serial.print(": ");
   Serial.println(mfrc522.PICC_GetTypeName(piccType));
   return mfrc522.PICC_GetType(mfrc522.uid.sak);
+
 }
